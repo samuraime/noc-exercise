@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <title>二维噪声</title>
+  <meta name="description" content="" />
+  <style type="text/css">
+    body {
+      width: 100vw;
+      height: 100vh;
+      margin: 0;
+      overflow: hidden;
+    }
+    #canvas {
+      width: 100%;
+      height: 100%;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="canvas"></canvas>
+  <script type="module">
+    import noise from '../utils/perlin.js';
+    import utils from '../utils/index.js';
+
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+
+    const width = document.body.clientWidth;
+    const height = document.body.clientHeight;
+    const period = 150;
+    canvas.width = width;
+    canvas.height = height;
+
+    noise.seed(Math.random());
+
+    for (let x = 0; x < width; x++) {
+      for (let y = 0; y < height; y++) {
+        const n = utils.noiseMap(noise.perlin2(x / period, y / period), 0, 1);
+        ctx.fillStyle = `hsla(${Math.floor(n * 360)}, 90%, 60%, ${n})`;
+        ctx.fillRect(x, y, 1, 1);
+      }
+    }
+  </script>
+</body>
+</html>

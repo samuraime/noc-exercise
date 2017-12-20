@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <title>指向中心的流场</title>
+  <meta name="description" content="" />
+  <style type="text/css">
+    body {
+      width: 100vw;
+      height: 100vh;
+      margin: 0;
+      overflow: hidden;
+    }
+    #canvas {
+      width: 100%;
+      height: 100%;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="canvas"></canvas>
+  <script type="module">
+    import utils from '../utils/index.js';
+    import Vector from '../utils/Vector.js';
+
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    const raf = window.requestAnimationFrame;
+
+    const width = document.body.clientWidth * 2;
+    const height = document.body.clientHeight * 2;
+    canvas.width = width;
+    canvas.height = height;
+
+    class FlowField {
+      constructor(width, height, size) {
+        this.size = size;
+        this.rows = Math.ceil(height / size);
+        this.cols = Math.ceil(width / size);
+        this.fields = [];
+        this.init();
+        this.display();
+      }
+      init() {
+        const center = new Vector(width / 2, height / 2);
+        for (let i = 0; i < this.rows; i++) {
+          this.fields[i] = [];
+          for (let j = 0; j < this.cols; j++) {
+            const v = new Vector(j * this.size + this.size / 2, i * this.size + this.size / 2);
+            this.fields[i][j] = v.sub(center).heading() + Math.PI;
+          }
+        }
+      }
+      display() {
+        ctx.clearRect(0, 0, width, height);
+        ctx.beginPath();
+        for (let i = 0; i < this.rows; i++) {
+          for (let j = 0; j < this.cols; j++) {
+            ctx.save();
+            ctx.translate(j * this.size + this.size / 2, i * this.size + this.size / 2);
+            ctx.rotate(this.fields[i][j]);
+            ctx.beginPath();
+            ctx.moveTo(this.size / 2 - this.size / 8, 0);
+            ctx.lineTo(-this.size / 2 + this.size / 8, this.size / 8);
+            ctx.lineTo(0, 0);
+            ctx.lineTo(-this.size / 2 + this.size / 8, -this.size / 8);
+            ctx.closePath();
+            ctx.fill();
+            ctx.restore();
+          }
+        }
+      }
+    }
+    new FlowField(width, height, 100);
+  </script>
+</body>
+</html>

@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <title>分形圆</title>
+  <meta name="description" content="" />
+  <style type="text/css">
+    body {
+      width: 100vw;
+      height: 100vh;
+      margin: 0;
+      overflow: hidden;
+    }
+    #canvas {
+      width: 100%;
+      height: 100%;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="canvas"></canvas>
+  <script type="module">
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+
+    const width = document.body.clientWidth * 2;
+    const height = document.body.clientHeight * 2;
+    canvas.width = width;
+    canvas.height = height;
+    const cx = width / 2;
+    const cy = height / 2;
+    const hypotenuse = Math.sqrt((width / 2) ** 2 + (height / 2) ** 2);
+
+    const drawCircle = (x, y, radius) => {
+      ctx.beginPath();
+      ctx.arc(x, y, radius, 0, 2 * Math.PI);
+      const h = Math.sqrt((x - cx) ** 2 + (y - cy) ** 2) / hypotenuse * 360;
+      ctx.strokeStyle = `hsla(${h}, 80%, 40%, .6)`;
+      ctx.stroke();
+      if (radius > 8) {
+        drawCircle(x - radius, y, radius / 2);
+        drawCircle(x + radius, y, radius / 2);
+        drawCircle(x, y - radius, radius / 2);
+        drawCircle(x, y + radius, radius / 2);
+      }
+    };
+    drawCircle(cx, cy, height / 2);
+  </script>
+</body>
+</html>

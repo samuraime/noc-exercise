@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <title>Perlin噪声流场</title>
+  <meta name="description" content="" />
+  <style type="text/css">
+    body {
+      width: 100vw;
+      height: 100vh;
+      margin: 0;
+      overflow: hidden;
+    }
+    #canvas {
+      width: 100%;
+      height: 100%;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="canvas"></canvas>
+  <script type="module">
+    import utils from '../utils/index.js';
+    import noise from '../utils/perlin.js';
+
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    const raf = window.requestAnimationFrame;
+
+    const width = document.body.clientWidth * 2;
+    const height = document.body.clientHeight * 2;
+    canvas.width = width;
+    canvas.height = height;
+
+    class FlowField {
+      constructor(width, height, size) {
+        this.size = size;
+        this.rows = Math.ceil(height / size);
+        this.cols = Math.ceil(width / size);
+        this.run = this.run.bind(this);
+        this.fields = [];
+        this.time = 0;
+        this.period = 1 / 100;
+        this.timePeriod = 1 / 2;
+        this.update();
+        this.run();
+      }
+      update() {
+        this.time += 0.01;
+        for (let i = 0; i < this.rows; i++) {
+          this.fields[i] = [];
+          for (let j = 0; j < this.cols; j++) {
+            this.fields[i][j] = noise.simplex3(i * this.period, j * this.period, this.time * this.timePeriod);
+          }
+        }
+      }
+      display() {
+        ctx.clearRect(0, 0, width, height);
+        for (let i = 0; i < this.rows; i++) {
+          for (let j = 0; j < this.cols; j++) {
+            ctx.save();
+            ctx.translate(j * this.size + this.size / 2, i * this.size + this.size / 2);
+            ctx.rotate(utils.noiseMap(this.fields[i][j], 0, 2 * Math.PI));
+            ctx.beginPath();
+            ctx.moveTo(this.size / 2 - this.size / 8, 0);
+            ctx.lineTo(-this.size / 2 + this.size / 8, this.size / 8);
+            ctx.lineTo(0, 0);
+            ctx.lineTo(-this.size / 2 + this.size / 8, -this.size / 8);
+            ctx.closePath();
+            ctx.fill();
+            ctx.restore();
+          }
+        }
+      }
+      run() {
+        this.update();
+        this.display();
+        raf(this.run);
+      }
+    }
+    const flowField = new FlowField(width, height, 100);
+  </script>
+</body>
+</html>

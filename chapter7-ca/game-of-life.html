@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <title>The Game of Life</title>
+  <meta name="description" content="" />
+  <style type="text/css">
+    body {
+      width: 100vw;
+      height: 100vh;
+      margin: 0;
+      overflow: hidden;
+    }
+    #canvas {
+      width: 100%;
+      height: 100%;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="canvas"></canvas>
+  <script type="module">
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+
+    const width = document.body.clientWidth;
+    const height = document.body.clientHeight;
+    canvas.width = width;
+    canvas.height = height;
+
+    const size = 40;
+    const rows = Math.floor(height / size);
+    const cols = Math.floor(width / size);
+    let cells = [];
+    for (let i = 0; i < rows; i++) {
+      cells[i] = [];
+      for(let j = 0; j < cols; j++) {
+        cells[i][j] = Math.random() > 0.8 ? 1 : 0;
+      }
+    }
+
+    // 规则：周围<3 || >7 凋亡;
+    const getNextState = (row, col) => {
+      const rowStart = row - 1 < 0 ? 0 : row - 1;
+      const rowEnd = row + 1 >= rows ? row : row + 1;
+      const colStart = col - 1 < 0 ? 0 : col - 1;
+      const colEnd = col + 1 >= cols ? col : col + 1;
+      let count = 0;
+      for (let i = rowStart; i <= rowEnd; i++) {
+        for(let j = colStart; j <= colEnd; j++) {
+          count += cells[i][j];
+        }
+      }
+      count -= cells[row][col];
+      return (count < 2 || count > 4) ? 0 : 1;
+    };
+
+    const drawCell = (row, col) => {
+      ctx.fillStyle = cells[row][col] ? '#000' : '#fff';
+      ctx.fillRect(col * size + 1, row * size + 1, size - 2, size - 2);
+    };
+
+    const raf = (callback) => {
+      setTimeout(callback, 1000);
+    };
+
+    const generate = () => {
+      raf(generate);
+      const nextCells = [];
+      ctx.clearRect(0, 0, width, height);
+      for (let i = 0; i < rows; i++) {
+        nextCells[i] = [];
+        for(let j = 0; j < cols; j++) {
+          nextCells[i][j] = getNextState(i, j);
+          drawCell(i, j);
+        }
+      }
+      cells = nextCells;
+    };
+    raf(generate);
+  </script>
+</body>
+</html>

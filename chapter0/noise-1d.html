@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <title>一维Perlin噪声</title>
+  <meta name="description" content="" />
+  <style type="text/css">
+    body {
+      width: 100vw;
+      height: 100vh;
+      margin: 0;
+      overflow: hidden;
+    }
+    #canvas {
+      width: 100%;
+      height: 100%;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="canvas"></canvas>
+  <script type="module">
+    import noise from '../utils/perlin.js';
+
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+
+    const width = document.body.clientWidth * 2;
+    const height = document.body.clientHeight * 2;
+    const period = 50;
+    canvas.width = width;
+    canvas.height = height;
+
+    noise.seed(Math.random());
+
+    for (let i = 0; i < width; i++) {
+      ctx.fillRect(i, height / 2 - 200, 4, 4);
+      // add noise
+      const n = noise.perlin2(i / period, 0) * 150;
+      ctx.fillRect(i, height / 2 + n, 4, 4);
+    }
+  </script>
+</body>
+</html>

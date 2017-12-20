@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <title>一维Perlin噪声</title>
+  <meta name="description" content="" />
+  <style type="text/css">
+    body {
+      width: 100vw;
+      height: 100vh;
+      margin: 0;
+      overflow: hidden;
+    }
+    #canvas {
+      width: 100%;
+      height: 100%;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="canvas"></canvas>
+  <script type="module">
+    import utils from '../utils/index.js';
+    import noise from '../utils/perlin.js';
+
+    noise.seed(Math.random());
+
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+
+    const width = document.body.clientWidth * 2;
+    const height = document.body.clientHeight * 2;
+    const period = 20;
+    canvas.width = width;
+    canvas.height = height;
+    const count = 20;
+
+    let t = 0;
+    const draw = () => {
+      window.requestAnimationFrame(draw);
+      ctx.clearRect(0, 0, width, height);
+      ctx.fillStyle = 'hsla(0, 90%, 50%, 0.5)';
+      ctx.fillRect(0, 0, width, height);
+      for (let i = -count; i <= count; i++) {
+        ctx.save();
+        ctx.fillStyle = '#fff';
+        const n = noise.simplex2(i / period, t);
+        ctx.translate(width / 2 + i * 10, height / 2);
+        ctx.beginPath();
+        ctx.arc(0, utils.noiseMap(n, -200, 200), 5 * Math.cos(i / count * Math.PI / 2), 0, 2 * Math.PI);
+        ctx.closePath();
+        ctx.fill();
+        ctx.restore();
+      }
+      t += 0.015;
+    };
+    window.requestAnimationFrame(draw);
+  </script>
+</body>
+</html>

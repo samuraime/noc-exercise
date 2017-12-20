@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <title>Wandering</title>
+  <meta name="description" content="" />
+  <style type="text/css">
+    body {
+      width: 100vw;
+      height: 100vh;
+      margin: 0;
+      overflow: hidden;
+    }
+    #canvas {
+      width: 100%;
+      height: 100%;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="canvas"></canvas>
+  <script type="module">
+    import utils from '../utils/index.js';
+    import Vector from '../utils/Vector.js';
+
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    const raf = window.requestAnimationFrame;
+
+    const width = document.body.clientWidth;
+    const height = document.body.clientHeight;
+    canvas.width = width;
+    canvas.height = height;
+
+    class Vehicle {
+      constructor(location, velocity, acceleration) {
+        this.location = location;
+        this.velocity = velocity;
+        this.acceleration = acceleration;
+        this.maxSpeed = 6;
+        this.maxForce = 2;
+        this.wanderTheta = 0;
+        this.run = this.run.bind(this);
+      }
+      applyForce(force) {
+        this.acceleration.add(force);
+      }
+      seek(target) {
+        // 根据位置反推速度，再根据速度反推加速度
+        const desired = Vector.sub(target, this.location);
+        const dist = desired.mag();
+        desired.normalize();
+        // 距离小于100则减速
+        if (dist < 100) {
+          const m = utils.map(dist, 0, 100, 0, this.maxSpeed);
+          desired.mult(m);
+        } else {
+          desired.mult(this.maxSpeed);
+        }
+
+        const steer = Vector.sub(desired, velocity);
+        steer.limit(this.maxForce);
+        this.applyForce(steer);
+      }
+      // http://www.red3d.com/cwr/steer/Wander.html
+      wander() {
+        const distance = 100; // 距未来位置距离
+        const radius = 10; // 未来位置处随机圆半径
+        const change = 0.3;
+        const circle = this.velocity.copy().normalize().mult(distance).add(this.location);
+        this.wanderTheta += utils.random(-change, change);
+        // const theta = this.wanderTheta + this.velocity.heading();
+        // const randomTarget = new Vector(radius * Math.cos(theta), radius * Math.sin(theta));
+        const randomTarget = new Vector(radius * Math.cos(this.wanderTheta), radius * Math.sin(this.wanderTheta));
+        const target = Vector.add(circle, randomTarget);
+        this.seek(target);
+      }
+      update() {
+        this.velocity.add(this.acceleration);
+        this.velocity.limit(this.maxSpeed);
+        this.location.add(this.velocity);
+        location.x = (location.x + width) % width;
+        location.y = (location.y + height) % height;
+        // reset加速度
+        this.acceleration.mult(0);
+      }
+      display(ctx) {
+        ctx.clearRect(0, 0, width, height);
+        ctx.save();
+        ctx.beginPath();
+        const theta = this.velocity.heading();
+        ctx.translate(this.location.x, this.location.y);
+        ctx.rotate(theta + Math.PI / 2);
+        ctx.moveTo(0, 0);
+        ctx.lineTo(-10, 40);
+        ctx.lineTo(0, 20);
+        ctx.lineTo(10, 40);
+        ctx.closePath();
+        ctx.restore();
+        ctx.fill();
+      }
+      run() {
+        this.wander();
+        this.update();
+        this.display(ctx);
+        raf(this.run);
+      }
+    }
+
+    const location = new Vector(width / 2, height / 2);
+    const velocity = new Vector();
+    const acceleration = new Vector();
+    const vehicle = new Vehicle(location, velocity, acceleration);
+    vehicle.run();
+  </script>
+</body>
+</html>

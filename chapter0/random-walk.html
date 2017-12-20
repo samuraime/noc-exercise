@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <title>随机游走</title>
+  <meta name="description" content="" />
+  <style type="text/css">
+    body {
+      width: 100vw;
+      height: 100vh;
+      margin: 0;
+      overflow: hidden;
+    }
+    #canvas {
+      width: 100%;
+      height: 100%;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="canvas"></canvas>
+  <script type="module">
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+
+    const width = document.body.clientWidth * 2;
+    const height = document.body.clientHeight * 2;
+    canvas.width = width;
+    canvas.height = height;
+
+    const walker = {
+      x: width / 2,
+      y: height / 2,
+    };
+    const walk = () => {
+      window.requestAnimationFrame(walk);
+      walker.x += (Math.random() - 0.5) * 10;
+      walker.y += (Math.random() - 0.5) * 10;
+      ctx.fillRect(walker.x, walker.y, 4, 4);
+    };
+    window.requestAnimationFrame(walk);
+  </script>
+</body>
+</html>
