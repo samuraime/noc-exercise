@@ -1,4 +1,4 @@
-import Vector from './vector.js';
+import Vector from './Vector.js';
 
 /**
  * 将区间的值映射到目标区间
