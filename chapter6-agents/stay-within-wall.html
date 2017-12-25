@@ -37,7 +37,7 @@
     const wall = 30;
 
     class Vehicle {
-      constructor(location, velocity, acceleration) {
+      constructor(location = new Vector(), velocity = new Vector(), acceleration = new Vector()) {
         this.location = location;
         this.velocity = velocity;
         this.acceleration = acceleration;
@@ -105,8 +105,7 @@
 
     const location = new Vector(width / 2, height / 2);
     const velocity = new Vector(utils.random(-1, 1), utils.random(-1, 1));
-    const acceleration = new Vector();
-    const vehicle = new Vehicle(location, velocity.normalize().mult(5), acceleration);
+    const vehicle = new Vehicle(location, velocity.normalize().mult(5));
     vehicle.run();
   </script>
 </body>

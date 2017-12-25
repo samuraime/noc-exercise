@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <title>路径跟随</title>
+  <meta name="description" content="" />
+  <style type="text/css">
+    body {
+      width: 100vw;
+      height: 100vh;
+      margin: 0;
+      overflow: hidden;
+    }
+    #canvas {
+      width: 100%;
+      height: 100%;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="canvas"></canvas>
+  <script type="module">
+    import utils from '../utils/index.js';
+    import Vector from '../utils/Vector.js';
+    import render from '../utils/render.js';
+
+    class Vehicle {
+      constructor(location = new Vector(), velocity = new Vector(), acceleration = new Vector()) {
+        this.location = location;
+        this.velocity = velocity;
+        this.acceleration = acceleration;
+        this.maxSpeed = 10;
+        this.maxForce = 2;
+        this.normalPoints = [];
+      }
+      applyForce(force) {
+        this.acceleration.add(force);
+      }
+      seek(target) {
+        // 根据位置反推速度，再根据速度反推加速度
+        const desired = Vector.sub(target, this.location).setMag(this.maxSpeed);
+
+        const steer = Vector.sub(desired, this.velocity);
+        steer.limit(this.maxForce);
+        this.applyForce(steer);
+      }
+      /**
+       * 规则
+       * 1. 选择最近的法线交点
+       * 2. 这个交点必须位于路径内
+       */
+      follow(path) {
+        const predict = this.velocity.copy().setMag(this.maxSpeed).add(this.location);
+        let closestPoint = null;
+        let subPath = null;
+        let closestDist = 10000;
+
+        const points = path.points.length;
+        for (let i = 0; i < points; i++) {
+          // 坐标转化为益path.start为原点计算
+          const start = path.points[i];
+          const end = path.points[i + 1 === points ? 0 : i + 1];
+          const p = Vector.sub(end, start);
+          let normalPoint = utils.getNormalPoint(predict, start, end);
+
+          // 法线交点不在路径内, 则假定为路径的边界
+          const notInline = normalPoint.x < Math.min(start.x, end.x)
+            || normalPoint.x > Math.max(start.x, end.x)
+            || normalPoint.y < Math.min(start.y, end.y)
+            || normalPoint.y > Math.max(start.y, end.y);
+          if (notInline) {
+            const startDist = Vector.dist(start, normalPoint);
+            const endDist = Vector.dist(end, normalPoint);
+            normalPoint = startDist < endDist ? start.copy() : end.copy();
+          }
+
+          this.normalPoints[i] = normalPoint;
+          const dist = Vector.dist(predict, normalPoint);
+          if (dist < closestDist) {
+            closestDist = dist;
+            closestPoint = normalPoint;
+            subPath = p;
+          }
+        }
+        if (closestDist > path.radius) {
+          // 若偏离路径半径，则设定下一个目标位置为path与法线交点前的某个位置
+          // 这里懒得找方向了, 直接给0.
+          const target = Vector.add(closestPoint, subPath.setMag(20));
+          this.seek(target);
+        } else {
+          this.velocity.setMag(this.maxSpeed);
+        }
+      }
+      update() {
+        this.velocity.add(this.acceleration);
+        this.velocity.limit(this.maxSpeed);
+        this.location.add(this.velocity);
+        // reset加速度
+        this.acceleration.mult(0);
+
+        if (this.location.x < 0) {
+          this.location.x = width;
+        } else if (this.location.x > width) {
+          this.location.x = 0;
+        }
+        if (this.location.y < 0) {
+          this.location.y = height;
+        } else if (this.location.y > height) {
+          this.location.y = 0;
+        }
+      }
+      display(ctx) {
+        ctx.save();
+        ctx.beginPath();
+        const theta = this.velocity.heading();
+        ctx.translate(this.location.x, this.location.y);
+        ctx.rotate(theta + Math.PI / 2);
+        ctx.moveTo(0, 0);
+        ctx.lineTo(-10, 40);
+        ctx.lineTo(0, 20);
+        ctx.lineTo(10, 40);
+        ctx.closePath();
+        ctx.fill();
+        ctx.restore();
+        this.normalPoints.forEach((p) => {
+          ctx.save();
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, 4, 0, 2 * Math.PI);
+          ctx.closePath();
+          ctx.fillStyle = '#f00';
+          ctx.fill();
+          ctx.restore();
+        });
+      }
+    }
+
+    class Path {
+      constructor(points, radius = 20) {
+        this.points = points;
+        this.radius = radius;
+      }
+      draw(ctx, radius = 1, color = '#000') {
+        ctx.save();
+        ctx.strokeStyle = color;
+        ctx.lineWidth = radius;
+        ctx.lineJoin = 'round';
+        ctx.beginPath();
+        for (let i = 0; i < this.points.length; i++) {
+          if (i === 0) {
+            ctx.moveTo(this.points[i].x, this.points[i].y);
+          } else {
+            ctx.lineTo(this.points[i].x, this.points[i].y);
+          }
+        }
+        ctx.closePath();
+        ctx.stroke();
+        ctx.restore();
+      }
+      display(ctx) {
+        this.draw(ctx, this.radius * 2, '#eee');
+        this.draw(ctx);
+      }
+    }
+
+    class FollowSystem {
+      constructor() {
+        this.vehicle = new Vehicle(new Vector(), new Vector(10, 0));
+        const center = new Vector(width / 2, height / 2);
+        const points = 17;
+        this.path = new Path(
+          Array(points).fill(0).map((_, i) => {
+            const r = 300;
+            const angle = 2 * Math.PI / points * i;
+            return Vector.add(center, Vector.polar(r, angle));
+          })
+        );
+      }
+      render(ctx) {
+        this.path.display(ctx);
+        this.vehicle.display(ctx);
+
+        this.vehicle.follow(this.path);
+        this.vehicle.update();
+      }
+    }
+
+    const canvas = document.getElementById('canvas');
+    const width = canvas.clientWidth;
+    const height = canvas.clientHeight;
+    const followSystem = new FollowSystem();
+    render(followSystem, canvas, width, height);
+  </script>
+</body>
+</html>

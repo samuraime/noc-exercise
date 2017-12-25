@@ -32,6 +32,19 @@ export const toDegree = radians => radians * 180 / Math.PI;
 export const toRadian = degrees => degrees * Math.PI / 180;
 
 /**
+ * 获取点线最近交点(法线)
+ * @param {Vector} location 点
+ * @param {Vector} start 线起点
+ * @param {Vector} end 线终点
+ */
+export const getNormalPoint = (location, start, end) => {
+  const a = Vector.sub(location, start);
+  const b = Vector.sub(end, start);
+  const theta = Vector.angleBetween(b, a);
+  return Vector.add(start, b.setMag(a.mag() * Math.cos(theta)));
+};
+
+/**
  * Keeps track of the current mouse position, relative to an element.
  * @param {HTMLElement} element
  * @return {Vector}
@@ -72,5 +85,6 @@ export default {
   random,
   toDegree,
   toRadian,
+  getNormalPoint,
   captureMouse,
 };

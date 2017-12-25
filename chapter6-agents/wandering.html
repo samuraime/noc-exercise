@@ -35,7 +35,7 @@
     canvas.height = height;
 
     class Vehicle {
-      constructor(location, velocity, acceleration) {
+      constructor(location = new Vector(), velocity = new Vector(), acceleration = new Vector()) {
         this.location = location;
         this.velocity = velocity;
         this.acceleration = acceleration;
@@ -60,7 +60,7 @@
           desired.mult(this.maxSpeed);
         }
 
-        const steer = Vector.sub(desired, velocity);
+        const steer = Vector.sub(desired, this.velocity);
         steer.limit(this.maxForce);
         this.applyForce(steer);
       }
@@ -81,8 +81,8 @@
         this.velocity.add(this.acceleration);
         this.velocity.limit(this.maxSpeed);
         this.location.add(this.velocity);
-        location.x = (location.x + width) % width;
-        location.y = (location.y + height) % height;
+        this.location.x = (this.location.x + width) % width;
+        this.location.y = (this.location.y + height) % height;
         // reset加速度
         this.acceleration.mult(0);
       }
@@ -109,10 +109,7 @@
       }
     }
 
-    const location = new Vector(width / 2, height / 2);
-    const velocity = new Vector();
-    const acceleration = new Vector();
-    const vehicle = new Vehicle(location, velocity, acceleration);
+    const vehicle = new Vehicle(new Vector(width / 2, height / 2));
     vehicle.run();
   </script>
 </body>

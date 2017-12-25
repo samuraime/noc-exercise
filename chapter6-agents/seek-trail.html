@@ -37,7 +37,7 @@
     const mouse = utils.captureMouse(canvas);
 
     class Vehicle {
-      constructor(location, velocity, acceleration) {
+      constructor(location = new Vector(), velocity = new Vector(), acceleration = new Vector()) {
         this.location = location;
         this.velocity = velocity;
         this.acceleration = acceleration;
@@ -62,7 +62,7 @@
           desired.mult(this.maxSpeed);
         }
 
-        const steer = Vector.sub(desired, velocity);
+        const steer = Vector.sub(desired, this.velocity);
         steer.limit(this.maxForce);
         this.applyForce(steer);
       }
@@ -106,9 +106,7 @@
     }
 
     const location = new Vector(width / 2, height / 2);
-    const velocity = new Vector();
-    const acceleration = new Vector();
-    const vehicle = new Vehicle(location, velocity, acceleration);
+    const vehicle = new Vehicle(location);
     vehicle.run();
   </script>
 </body>

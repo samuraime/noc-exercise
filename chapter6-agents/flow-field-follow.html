@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
-  <title>流场飘啊飘</title>
+  <title>漂流</title>
   <meta name="description" content="" />
   <style type="text/css">
     body {
@@ -95,7 +95,7 @@
     }
 
     class Vehicle {
-      constructor(location, velocity, acceleration) {
+      constructor(location = new Vector(), velocity = new Vector(), acceleration = new Vector()) {
         this.location = location;
         this.velocity = velocity;
         this.acceleration = acceleration;
@@ -150,9 +150,7 @@
     }
 
     const location = new Vector(width / 2, height / 2);
-    const velocity = new Vector();
-    const acceleration = new Vector();
-    const vehicle = new Vehicle(location, velocity, acceleration);
+    const vehicle = new Vehicle(location);
     vehicle.run();
   </script>
 </body>
